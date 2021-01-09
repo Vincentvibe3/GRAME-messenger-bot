@@ -107,7 +107,8 @@ def check_scenario(response):
                     ask_question(states[current_index+1]['message'], user, states[current_index+1]['name'])
                     if state['name'] == states[-2]['name']:
                         name, email, phone_number, availibilities = get_all_info(user)
-                        send_email(name, email, phone_number, availibilities)
+                        subject, body = form_register_email(name, email, phone_number, availibilities)
+                        send_email(subject, body)
     else:
         #other actions
         pass
@@ -156,9 +157,12 @@ def get_password():
         password = secret_file.read()
     return password
 
-def send_email(name, email, phone_number, availibilities):
+def form_register_email(name, email, phone_number, availibilities):
     subject = "Registration: " + name
     body = 'Name: ' + name + '\nE-mail: ' + email + '\nPhone Number: ' + phone_number + '\nAvailabilities: ' + availibilities + " hours per week"
+    return subject, body
+
+def send_email(subject, body):
     sender_email = 'messenger.bot.logs@gmail.com'
     receiver_email = 'keveleven26@gmail.com'
     password = get_password()
