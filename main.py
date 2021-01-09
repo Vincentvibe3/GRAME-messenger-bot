@@ -2,6 +2,7 @@ import requests
 import json
 import os
 
+
 TOKEN = os.environ['PAGE_ACCESS_TOKEN']
 
 {'sender': {'id': '3824615787560191'}, 'recipient': {'id': '100437728693507'}, 'timestamp': 1610204414942, 'postback': {'title': 'postback Button', 'payload': 'test'}}
@@ -134,9 +135,16 @@ def check_scenario(response):
         event_name = new_event[1]['name']
         send_message('There will be an upcoming event.',user)
         ask_event(user)
+        new_events_file = open('new_events.json', 'r')
+        new_events = json.loads(new_events_file.read())
+        location = ""
+        date = ""
+        description = ""
+        event_name = ""
+        # event_confirmation(user, response)
         if response.type == 'postback':
             if response.payload == 'Participate':
-                send_message(event_name)
+                send_message(event_name, user)
                 send_message('The event will take place in ' + location, user)
                 send_message('Date: ' + date, user)
                 send_message('Event description: ' + description, user)
@@ -153,7 +161,62 @@ def check_scenario(response):
                 send_message('No problem. See you next time!', user)
         pass
 
+# def event_confirmation(user, response, event):
+#     if response.type == 'postback':
+#                 if response.payload == 'Participate':
+#                     send_message(event_name, user)
+#                     send_message('The event will take place in ' + location, user)
+#                     send_message('Date: ' + date, user)
+#                     send_message('Event description: ' + description, user)
+#                     if response.type == 'postback':
+#                         if response.payload == 'Confirmed':
+#                             send_message('Thank you for participating!', user)
+#                             name = get_name(user)
+#                             subject, body = form_confirmed_participation_email(name, event_name)
+#                             send_email(subject, body)
 
+#                         elif response.payload == 'Canceled':
+#                             send_message('Understandable, have a nice day.', user)
+#                 elif response.payload == 'No Participate':
+#                     send_message('No problem. See you next time!', user)
+
+def get_new_events():
+    new_events = []
+    allevents = []
+    logged_events_file = open('events.json', 'r')
+    logged_events = json.loads(logged_events_file.read())
+    logged_events_file.close()
+    page_id = '100437728693507'
+    params = {"access_token": TOKEN}
+    url = 'https://graph.facebook.com/v9.0/%s/events' %(page_id)
+    response = requests.get(url, params=params)
+    data_json = json.loads(response.text)
+    events = data_json['data']
+    for event in events:
+        id = events[event]['id']
+        if id not in logged_events:
+            new_events.append(event)
+            logged_events.append(id)
+        allevents.append(id)
+    
+    for logged_event in logged_events:
+        for event in events:
+            if logged_event not in allevents:
+                del logged_events[logged_event]
+
+    output_file = open('events.json', 'w')
+    output_file.write(json.dumps(logged_events))
+    output_file.close()
+    new_events_file = open('new_events.json', 'w')
+    new_events_file.write(new_events)
+    new_events_file.close()
+
+def new_event_message():
+    users_file = open('members.json', 'r')
+    users = json.dumps(users_file.read())
+    for user in users:
+        send_message('There will be an upcoming event.', user)
+        ask_event(user)
 
 def check_membership():
     pass
@@ -182,8 +245,6 @@ def send_message(message, user_id, buttons=[]):
     url = "https://graph.facebook.com/v9.0/me/messages"
     send = requests.post(url, params=payload, json=request)
 
-# def checkresponse(message):
-#     if message
 
 import email, smtplib, ssl
 

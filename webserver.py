@@ -8,6 +8,13 @@ app = Flask(__name__)
 def index():
     return 'Welcome'
 
+@app.route('/check-events', methods=['GET'])
+def check():
+    new_events = main.get_new_events()
+    if new_events:
+        main.new_event_message()
+    return 'OK'
+
 @app.route('/webhook', methods=['POST'])
 def post_to_webhook():
     body = request.get_json()
@@ -28,7 +35,7 @@ def post_to_webhook():
 
 @app.route('/webhook', methods=['GET'])
 def webhook():
-    TOKEN = os.environ['WEBHOOK_ACCESS_TOKEN']
+    WEVHOOK_TOKEN = os.environ['WEBHOOK_ACCESS_TOKEN']
     try:
         mode = request.args.get('hub.mode', None)
         token = request.args.get('hub.verify_token', None)
@@ -36,7 +43,7 @@ def webhook():
     except:
         abort(403)
     
-    if mode == 'subscribe' and token == TOKEN:
+    if mode == 'subscribe' and token == WEBHOOK_TOKEN:
         return challenge
     else:
         abort(404)
