@@ -43,14 +43,16 @@ def get_user_state(user):
     memberslist.close()
     state = members[user]['state']
     return state
+def get_started(user):
+    message = 'Would you like to register?'
+    choices = [{"type":"postback", "title":"Yes", "payload":"Register"}, {"type":"postback", "title":"No", "payload":"No Register"}]
+    send_message(message, user, choices)
 
 def check_scenario(response):
     user = response.user
     if response.type == 'postback':
         if response.payload == 'getstarted':
-            message = 'Would you like to register?'
-            choices = [{"type":"postback", "title":"Yes", "payload":"Register"}, {"type":"postback", "title":"No", "payload":"No Register"}]
-            send_message(message, user, choices)
+            get_started(user)
         elif response.payload == "No Register":
             send_message('Thank you for your time', user)
         elif response.payload == "Register":
@@ -62,6 +64,7 @@ def check_scenario(response):
                phone_number
                availibilities
                Registered"""
+
     else:
         user_state = get_user_state(user)
         if user_state == 'name':
