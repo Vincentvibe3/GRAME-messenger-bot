@@ -80,6 +80,12 @@ def write_user_info(user, info, value):
     memberslist.write(json.dumps(members, indent=4))
     memberslist.close()
 
+def get_name(user):
+    memberslist = open('members.json', 'r')
+    members = json.loads(memberslist.read())
+    memberslist.close()
+    name = members[user]['name']
+    return name
 
 def get_all_info(user):
     memberslist = open('members.json', 'r')
@@ -124,16 +130,22 @@ def check_scenario(response):
         location = ""
         date = ""
         description = ""
+        event_name = ""
         send_message('There will be an upcoming event.',user)
         ask_event(user)
         if response.type == 'postback':
             if response.payload == 'Participate':
+                send_message(event_name)
                 send_message('The event will take place in ' + location, user)
                 send_message('Date: ' + date, user)
                 send_message('Event description: ' + description, user)
                 if response.type == 'postback':
                     if response.payload == 'Confirmed':
                         send_message('Thank you for participating!', user)
+                        name = get_name(user)
+                        subject, body = form_confirmed_participation_email(name, event_name)
+                        send_email(subject, body)
+
                     elif response.payload == 'Canceled':
                         send_message('Understandable, have a nice day.', user)
             elif response.payload == 'No Participate':
@@ -189,6 +201,11 @@ def form_register_email(name, email, phone_number, availibilities):
     body = 'Name: ' + name + '\nE-mail: ' + email + '\nPhone Number: ' + phone_number + '\nAvailabilities: ' + availibilities + " hours per week"
     return subject, body
 
+def form_confirmed_participation_email(name, event_name):
+    subject = name + " is participating!"
+    body = name + " has confirmed his participation to" + event_name + "."
+    return subject, body
+
 def send_email(subject, body):
     sender_email = 'messenger.bot.logs@gmail.com'
     receiver_email = 'keveleven26@gmail.com'
@@ -204,4 +221,3 @@ def send_email(subject, body):
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, text)
-
