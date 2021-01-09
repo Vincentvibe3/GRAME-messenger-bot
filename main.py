@@ -43,12 +43,31 @@ def get_user_state(user):
     memberslist.close()
     state = members[user]['state']
     return state
+
 def get_started(user):
     message = 'Would you like to register?'
     choices = [{"type":"postback", "title":"Yes", "payload":"Register"}, {"type":"postback", "title":"No", "payload":"No Register"}]
     send_message(message, user, choices)
 
+def ask_question(message, user, nextstate):
+    send_message(message, user)
+    set_user_state(user, nextstate)
+
+def get_info(user, state, response):
+    info = response.message
+    write_user_info(user, state, info)
+
+def write_user_info(user, info, value):
+    memberslist = open('members.json', 'r')
+    members = json.loads(memberslist.read())
+    memberslist.close()
+    members[user][info] = value
+    memberslist = open('members.json', 'w')
+    memberslist.write(json.dumps(members))
+    memberslist.close()
+
 def check_scenario(response):
+    states = [{'name':'name', 'message':'What is your name(ex: Smith, John)'} 'email' 'phone_number' 'availibilities' 'Registered']
     user = response.user
     if response.type == 'postback':
         if response.payload == 'getstarted':
@@ -56,22 +75,14 @@ def check_scenario(response):
         elif response.payload == "No Register":
             send_message('Thank you for your time', user)
         elif response.payload == "Register":
-            send_message('What is your name(ex: Smith, John)', user)
-            set_user_state(user, 'name')
-            """States:
-               name
-               email
-               phone_number
-               availibilities
-               Registered"""
+            ask_question(states['name']['message'], user, 'name')
 
     else:
         user_state = get_user_state(user)
-        if user_state == 'name':
-            last_name, first_name = response.message.split(', ')
-            send_message('What is your email', user)
-            set_user_state(user, 'email')
-        #send_message('message', response.user)
+        for state in states:
+            if user_state == state['name']:
+                get_info(user, state['name'], response)
+                ask_question(states[state+1]['message'], user, states[state+1]['name'])
     
 
 def check_membership():
