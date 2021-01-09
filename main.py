@@ -31,10 +31,13 @@ def set_user_state(user, state):
     except Exception:
         members = {}
     memberslist.close()
-    members[user] = {}
-    members[user]['state'] = state
+    try:
+        members[user]['state'] = state
+    except Exception:
+        members[user] = {}
+        members[user]['state'] = state
     memberslist = open('members.json', 'w')
-    memberslist.write(json.dumps(members))
+    memberslist.write(json.dumps(members, indent=4))
     memberslist.close()
     
 def get_user_state(user):
@@ -63,7 +66,7 @@ def write_user_info(user, info, value):
     memberslist.close()
     members[user][info] = value
     memberslist = open('members.json', 'w')
-    memberslist.write(json.dumps(members))
+    memberslist.write(json.dumps(members, indent=4))
     memberslist.close()
 
 
@@ -78,14 +81,18 @@ def check_scenario(response):
         elif response.payload == "No Register":
             send_message('Thank you for your time', user)
         elif response.payload == "Register":
-            ask_question(states['name']['message'], user, 'name')
+            ask_question(states[0]['message'], user, 'name')
 
     else:
         user_state = get_user_state(user)
-        for state in states:
-            if user_state == state['name']:
-                get_info(user, state['name'], response)
-                ask_question(states[state+1]['message'], user, states[state+1]['name'])
+        if user_state != 'Registered':
+            for state in states:
+                print('checking states')
+                if user_state == state['name']:
+                    current_index = states.index(state)
+                    print(current_index)
+                    get_info(user, state['name'], response)
+                    ask_question(states[current_index+1]['message'], user, states[current_index+1]['name'])
     
 
 def check_membership():
