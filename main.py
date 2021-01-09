@@ -53,6 +53,16 @@ def get_started(user):
     choices = [{"type":"postback", "title":"Yes", "payload":"Register"}, {"type":"postback", "title":"No", "payload":"No Register"}]
     send_message(message, user, choices)
 
+def ask_event(user):
+    message = 'Would you be interested in participating in this event? (say yes for more details)'
+    choices = [{"type":"postback", "title":"Yes", "payload":"Participate"}, {"type":"postback", "title":"No", "payload":"No Participate"}]
+    send_message(message, user, choices)
+
+def ask_for_confirmation(user):
+    message = 'Confirm your participation'
+    choices = [{"type":"postback", "title":"Yes", "payload":"Confirmed"}, {"type":"postback", "title":"Cancel", "payload":"Canceled"}]
+    send_message(message, user, choices)   
+
 def ask_question(message, user, nextstate):
     send_message(message, user)
     set_user_state(user, nextstate)
@@ -111,6 +121,23 @@ def check_scenario(response):
                         send_email(subject, body)
     else:
         #other actions
+        location = ""
+        date = ""
+        description = ""
+        send_message('There will be an upcoming event.',user)
+        ask_event(user)
+        if response.type == 'postback':
+            if response.payload == 'Participate':
+                send_message('The event will take place in ' + location, user)
+                send_message('Date: ' + date, user)
+                send_message('Event description: ' + description, user)
+                if response.type == 'postback':
+                    if response.payload == 'Confirmed':
+                        send_message('Thank you for participating!', user)
+                    elif response.payload == 'Canceled':
+                        send_message('Understandable, have a nice day.', user)
+            elif response.payload == 'No Participate':
+                send_message('No problem. See you next time!', user)
         pass
 
 
