@@ -68,7 +68,9 @@ def write_user_info(user, info, value):
 
 
 def check_scenario(response):
-    states = [{'name':'name', 'message':'What is your name(ex: Smith, John)'} 'email' 'phone_number' 'availibilities' 'Registered']
+    states = [{'name':'name', 'message':'What is your name? (ex: Smith, John)'}, {'name':'email', 'message': 'What is your E-mail address? (ex: John.Smith@gmail.com)'}, 
+    {'name':'phone_number', 'message':'What is your phone number? (ex: 438-675-8956)'}, {'name':'availibilities', 'message':'How many hours are you available a week? (ex: 5)'},
+    {'name':'Registered', 'message':'Thank you for helping!'}]
     user = response.user
     if response.type == 'postback':
         if response.payload == 'getstarted':
