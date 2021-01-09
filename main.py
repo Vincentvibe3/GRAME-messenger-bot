@@ -76,13 +76,17 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+def get_password():
+    with open('Password.txt', 'r') as secret_file:
+        password = secret_file.read()
+    return password
+
 def send_email(name, email, phone_number, availibilities):
     subject = "Registration: " + name
-    body = 'Name: ' + name + '\nE-mail: ' + email + '\n Phone Number: ' 
-    + phone_number + '\n Availabilities: ' + availibilities
+    body = 'Name: ' + name + '\nE-mail: ' + email + '\nPhone Number: ' + phone_number + '\nAvailabilities: ' + availibilities + " hours per week"
     sender_email = 'messenger.bot.logs@gmail.com'
     receiver_email = 'keveleven26@gmail.com'
-    password = 
+    password = get_password()
     message = MIMEMultipart()
     message["From"] = sender_email
     message["To"] = receiver_email
