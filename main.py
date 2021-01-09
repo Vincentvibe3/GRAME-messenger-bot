@@ -66,6 +66,7 @@ def write_user_info(user, info, value):
     memberslist.write(json.dumps(members))
     memberslist.close()
 
+
 def check_scenario(response):
     states = [{'name':'name', 'message':'What is your name(ex: Smith, John)'} 'email' 'phone_number' 'availibilities' 'Registered']
     user = response.user
