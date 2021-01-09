@@ -1,11 +1,11 @@
 from flask import Flask, request, redirect, abort
 import os
+import main
 
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def index():
-    print('test')
     return 'Welcome'
 
 @app.route('/webhook', methods=['POST'])
@@ -14,6 +14,8 @@ def post_to_webhook():
     if body['object']=='page':
         for entry in body['entry']:
             webhook_event = entry['messaging'][0]
+        message_response = main.response(webhook_event)
+        main.send_message('hello world', message_response.user)
         return 'EVENT_RECEIVED'
     else:
         abort(404) 
@@ -22,7 +24,7 @@ def post_to_webhook():
 
 @app.route('/webhook', methods=['GET'])
 def webhook():
-    TOKEN = os.environ['PAGE_ACCESS_TOKEN']
+    TOKEN = os.environ['WEBHOOK_ACCESS_TOKEN']
     try:
         mode = request.args.get('hub.mode', None)
         token = request.args.get('hub.verify_token', None)
@@ -30,7 +32,6 @@ def webhook():
     except:
         abort(403)
     
-    print((mode, token, challenge))
     if mode == 'subscribe' and token == TOKEN:
         return challenge
     else:
