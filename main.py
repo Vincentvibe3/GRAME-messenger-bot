@@ -1,10 +1,9 @@
 import requests
 import json
 import os
+import time
 
 TOKEN = os.environ['PAGE_ACCESS_TOKEN']
-
-{'sender': {'id': '3824615787560191'}, 'recipient': {'id': '100437728693507'}, 'timestamp': 1610204414942, 'postback': {'title': 'postback Button', 'payload': 'test'}}
 
 class response():
     def __init__(self, data):
@@ -150,12 +149,38 @@ def check_scenario(response):
                         send_message('Understandable, have a nice day.', user)
             elif response.payload == 'No Participate':
                 send_message('No problem. See you next time!', user)
-        pass
 
+def get_new_events():
+    new_events = []
+    allevents = []
+    logged_events_file = open('events.json', 'r')
+    logged_events = json.loads(logged_events_file.read())
+    logged_events_file.close()
+    page_id = '100437728693507'
+    params = {"access_token": TOKEN}
+    url = 'https://graph.facebook.com/v9.0/%s/events' %(page_id)
+    response = requests.get(url, params=params)
+    data_json = json.loads(response.text)
+    events = data_json['data']
+    for event in events:
+        id = events[event]['id']
+        if id not in logged_events:
+            new_events.append(id)
+            logged_events.append(id)
+        allevents.append(id)
+    
+    for logged_event in logged_events:
+        for event in events:
+            if logged_event not in allevents:
+                del logged_events[logged_event]
 
+    output_file = open('events.json', 'w')
+    output_file.write(json.dumps(logged_events))
+    output__file.close()
+    return new_events 
 
-def check_membership():
-    pass
+get_new_events()
+
 
 def send_message(message, user_id, buttons=[]):
     #check if CTA buttons are given
