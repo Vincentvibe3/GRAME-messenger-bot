@@ -2,8 +2,6 @@ import requests
 import json
 import os
 
-memberslist = open('members.json', 'w')
-
 TOKEN = os.environ['PAGE_ACCESS_TOKEN']
 
 {'sender': {'id': '3824615787560191'}, 'recipient': {'id': '100437728693507'}, 'timestamp': 1610204414942, 'postback': {'title': 'postback Button', 'payload': 'test'}}
@@ -26,17 +24,51 @@ class registration():
     def __init__(self, data):
         pass
 
+def set_user_state(user, state):
+    memberslist = open('members.json', 'r')
+    try:
+        members = json.loads(memberslist.read())
+    except Exception:
+        members = {}
+    memberslist.close()
+    members[user] = {}
+    members[user]['state'] = state
+    memberslist = open('members.json', 'w')
+    memberslist.write(json.dumps(members))
+    memberslist.close()
+    
+def get_user_state(user):
+    memberslist = open('members.json', 'r')
+    members = json.loads(memberslist.read())
+    memberslist.close()
+    state = members[user]['state']
+    return state
+
 def check_scenario(response):
+    user = response.user
     if response.type == 'postback':
         if response.payload == 'getstarted':
             message = 'Would you like to register?'
-            user = response.user
             choices = [{"type":"postback", "title":"Yes", "payload":"Register"}, {"type":"postback", "title":"No", "payload":"No Register"}]
             send_message(message, user, choices)
-        else:
-            send_message('hello', response.user)
+        elif response.payload == "No Register":
+            send_message('Thank you for your time', user)
+        elif response.payload == "Register":
+            send_message('What is your name(ex: Smith, John)', user)
+            set_user_state(user, 'name')
+            """States:
+               name
+               email
+               phone_number
+               availibilities
+               Registered"""
     else:
-        send_message('message', response.user)
+        user_state = get_user_state(user)
+        if user_state == 'name':
+            last_name, first_name = response.message.split(', ')
+            send_message('What is your email', user)
+            set_user_state(user, 'email')
+        #send_message('message', response.user)
     
 
 def check_membership():
