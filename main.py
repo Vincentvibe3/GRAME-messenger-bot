@@ -20,9 +20,6 @@ class response():
             self.message = self.data['message']['text']
             self.type = 'message'
 
-class registration():
-    def __init__(self, data):
-        pass
 
 def set_user_state(user, state):
     memberslist = open('members.json', 'r')
@@ -42,9 +39,13 @@ def set_user_state(user, state):
     
 def get_user_state(user):
     memberslist = open('members.json', 'r')
-    members = json.loads(memberslist.read())
+    try:
+        members = json.loads(memberslist.read())
+    except Exception:
+        state = 'No entry'
+    else:
+        state = members[user]['state']
     memberslist.close()
-    state = members[user]['state']
     return state
 
 def get_started(user):
@@ -70,22 +71,33 @@ def write_user_info(user, info, value):
     memberslist.close()
 
 
-def check_scenario(response):
-    states = [{'name':'name', 'message':'What is your name? (ex: Smith, John)'}, {'name':'email', 'message': 'What is your E-mail address? (ex: John.Smith@gmail.com)'}, 
-    {'name':'phone_number', 'message':'What is your phone number? (ex: 438-675-8956)'}, {'name':'availibilities', 'message':'How many hours are you available a week? (ex: 5)'},
-    {'name':'Registered', 'message':'Thank you for helping!'}]
-    user = response.user
-    if response.type == 'postback':
-        if response.payload == 'getstarted':
-            get_started(user)
-        elif response.payload == "No Register":
-            send_message('Thank you for your time', user)
-        elif response.payload == "Register":
-            ask_question(states[0]['message'], user, 'name')
+def get_all_info(user):
+    memberslist = open('members.json', 'r')
+    members = json.loads(memberslist.read())
+    memberslist.close()
+    name = members[user]['name']
+    email = members[user]['email']
+    phone_number = members[user]['phone_number']
+    availibilities = members[user]['availibilities']
+    return name, email, phone_number, availibilities
 
-    else:
-        user_state = get_user_state(user)
-        if user_state != 'Registered':
+def check_scenario(response):
+    user = response.user
+    user_state = get_user_state(user)
+    if user_state != 'Registered':
+        #registration
+        states = [{'name':'name', 'message':'What is your name? (ex: Smith, John)'}, {'name':'email', 'message': 'What is your E-mail address? (ex: John.Smith@gmail.com)'}, 
+        {'name':'phone_number', 'message':'What is your phone number? (ex: 438-675-8956)'}, {'name':'availibilities', 'message':'How many hours are you available a week? (ex: 5)'},
+        {'name':'Registered', 'message':'Thank you for helping!'}]
+        if response.type == 'postback':
+            if response.payload == 'getstarted':
+                get_started(user)
+            elif response.payload == "No Register":
+                send_message('Thank you for your time', user)
+            elif response.payload == "Register":
+                ask_question(states[0]['message'], user, 'name')
+
+        else:
             for state in states:
                 print('checking states')
                 if user_state == state['name']:
@@ -93,7 +105,14 @@ def check_scenario(response):
                     print(current_index)
                     get_info(user, state['name'], response)
                     ask_question(states[current_index+1]['message'], user, states[current_index+1]['name'])
-    
+                    if state['name'] == states[-2]['name']:
+                        name, email, phone_number, availibilities = get_all_info(user)
+                        send_email(name, email, phone_number, availibilities)
+    else:
+        #other actions
+        pass
+
+
 
 def check_membership():
     pass
