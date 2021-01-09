@@ -14,8 +14,11 @@ def post_to_webhook():
     if body['object']=='page':
         for entry in body['entry']:
             webhook_event = entry['messaging'][0]
+        print(webhook_event)
         message_response = main.response(webhook_event)
-        main.send_message('hello world', message_response.user)
+        message_response.set_message()
+        buttons = [{"type":"postback", "title":"postback Button", "payload":"test"}, {"type":"postback", "title":"hello", "payload":"test"}]
+        main.send_message('hello world', message_response.user, buttons)
         return 'EVENT_RECEIVED'
     else:
         abort(404) 
