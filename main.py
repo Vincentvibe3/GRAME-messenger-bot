@@ -127,10 +127,11 @@ def check_scenario(response):
                         send_email(subject, body)
     else:
         #other actions
-        location = ""
-        date = ""
-        description = ""
-        event_name = ""
+        new_event =[]
+        location = new_event[0]['place']['location']['city']
+        date = new_event[0]['start_time']
+        description = new_event[1]['description']
+        event_name = new_event[1]['name']
         send_message('There will be an upcoming event.',user)
         ask_event(user)
         if response.type == 'postback':
