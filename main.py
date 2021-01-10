@@ -128,19 +128,12 @@ def check_scenario(response):
                         send_email(subject, body)
     else:
         #other actions
-        new_event =[]
-        location = new_event[0]['place']['location']['city']
-        date = new_event[0]['start_time']
-        description = new_event[1]['description']
-        event_name = new_event[1]['name']
-        send_message('There will be an upcoming event.',user)
-        ask_event(user)
         new_events_file = open('new_events.json', 'r')
         new_events = json.loads(new_events_file.read())
-        location = ""
-        date = ""
-        description = ""
-        event_name = ""
+        location = new_events[0]['place']['location']['city']
+        date = new_events[0]['start_time']
+        description = new_events[0]['description']
+        event_name = new_events[0]['name']
         # event_confirmation(user, response)
         if response.type == 'postback':
             if response.payload == 'Participate':
@@ -148,18 +141,17 @@ def check_scenario(response):
                 send_message('The event will take place in ' + location, user)
                 send_message('Date: ' + date, user)
                 send_message('Event description: ' + description, user)
-                if response.type == 'postback':
-                    if response.payload == 'Confirmed':
-                        send_message('Thank you for participating!', user)
-                        name = get_name(user)
-                        subject, body = form_confirmed_participation_email(name, event_name)
-                        send_email(subject, body)
+                ask_for_confirmation(user)
+            elif response.payload == 'Confirmed':
+                send_message('Thank you for participating!', user)
+                name = get_name(user)
+                subject, body = form_confirmed_participation_email(name, event_name)
+                send_email(subject, body)
 
-                    elif response.payload == 'Canceled':
-                        send_message('Understandable, have a nice day.', user)
+            elif response.payload == 'Canceled':
+                send_message('Understandable, have a nice day.', user)
             elif response.payload == 'No Participate':
                 send_message('No problem. See you next time!', user)
-        pass
 
 # def event_confirmation(user, response, event):
 #     if response.type == 'postback':
@@ -184,7 +176,10 @@ def get_new_events():
     new_events = []
     allevents = []
     logged_events_file = open('events.json', 'r')
-    logged_events = json.loads(logged_events_file.read())
+    try:
+        logged_events = json.loads(logged_events_file.read())
+    except Exception:
+        logged_events = []
     logged_events_file.close()
     page_id = '100437728693507'
     params = {"access_token": TOKEN}
@@ -193,7 +188,7 @@ def get_new_events():
     data_json = json.loads(response.text)
     events = data_json['data']
     for event in events:
-        id = events[event]['id']
+        id = event['id']
         if id not in logged_events:
             new_events.append(event)
             logged_events.append(id)
@@ -207,19 +202,20 @@ def get_new_events():
     output_file = open('events.json', 'w')
     output_file.write(json.dumps(logged_events))
     output_file.close()
+    print(new_events)
     new_events_file = open('new_events.json', 'w')
-    new_events_file.write(new_events)
+    new_events_file.write(json.dumps(new_events))
     new_events_file.close()
+    return new_events
 
 def new_event_message():
     users_file = open('members.json', 'r')
-    users = json.dumps(users_file.read())
+    users = json.loads(users_file.read())
     for user in users:
+        print(user)
         send_message('There will be an upcoming event.', user)
         ask_event(user)
 
-def check_membership():
-    pass
 
 def send_message(message, user_id, buttons=[]):
     #check if CTA buttons are given
