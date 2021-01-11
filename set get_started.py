@@ -1,3 +1,4 @@
+'''sets the get started button'''
 import requests
 import os
 TOKEN = os.environ['PAGE_ACCESS_TOKEN']

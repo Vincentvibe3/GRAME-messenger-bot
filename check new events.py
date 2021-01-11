@@ -1,3 +1,4 @@
+'''ping /check-events endpoint to check events every hour'''
 import requests
 import json
 import time
